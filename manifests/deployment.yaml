@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: country-deployment
+  namespace: sony
+  labels:
+    app: country
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: country
+  template:
+    metadata:
+      labels:
+        app: country
+    spec:
+      containers:
+      - name: country
+        image: ashutoshjha1192/country:latest
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        resources:
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: country-service
+  namespace: sony
+spec:
+  selector:
+    app: country
+  ports:
+  - port: 80
+    targetPort: 80
+  type: NodePort
